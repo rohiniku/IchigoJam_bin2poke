@@ -4,13 +4,13 @@
 
 Makefileとかbin2poke.pyとか
 
-## ななにこれ?
+## なにこれ?
 
 IchigJamでのマシン語利用を容易にするため、Cソース(.c)からBASICソース(.bas)を自動生成するための Makefileと、下働きのPythonスクリプト。
 
 ## どうなってるの?
 
-以下の処理を実行するMakefileとPythonスクリプト(bin2poke.py)から構成されます。
+以下の処理を実行するMakefileと、その第3段階を実際に行うPythonスクリプト(bin2poke.py)から構成される。
 
 * Cソースをコンパイルしてオブジェクトファイル生成(.c -> .o)
 * オブジェクトファイルから必要な命令部分だけを抽出(.o -> .bin)
