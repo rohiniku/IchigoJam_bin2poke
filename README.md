@@ -23,6 +23,7 @@ IchigJamでのマシン語利用を容易にするため、Cソース(.c)からB
 * Max OS X El Capitan (10.11)
 * Homebrew
 * make (type makeしたら/usr/bin/makeにありました)
+
     $ make -v
     GNU Make 3.81
     Copyright (C) 2006  Free Software Foundation, Inc.
@@ -31,7 +32,8 @@ IchigJamでのマシン語利用を容易にするため、Cソース(.c)からB
     PARTICULAR PURPOSE.
 
     This program built for i386-apple-darwin11.3.0
-* ツールチェーン (brewでインストールしたやつarm-none-eabi-gcc, arm-none-eabi-objcopy)
+* ツールチェーン (brewでインストールしたやつarm-none-eabi-gcc, arm-none-eabi-objcopy) 
+
     $ arm-none-eabi-gcc -v
     arm-none-eabi-gcc (GNU Tools for ARM Embedded Processors) 4.9.3 20150303 (release) [ARM/embedded-4_9-branch revision 221220]
     Copyright (C) 2014 Free Software Foundation, Inc.
@@ -46,6 +48,7 @@ IchigJamでのマシン語利用を容易にするため、Cソース(.c)からB
     This program has absolutely no warranty.
     
 * python (brewでインストールしたやつ/usr/local/bin/pythonあたり)
+
     $ python
     Python 2.7.10 (default, Jul 31 2015, 14:00:49) 
     [GCC 4.2.1 Compatible Apple LLVM 6.1.0 (clang-602.0.53)] on darwin
