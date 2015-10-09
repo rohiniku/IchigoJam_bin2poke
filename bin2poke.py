@@ -58,16 +58,6 @@ def main():
                 line_no += line_step
                 out_file.write('\n')
                     
-# data = sys.stdin.read()
-
-# line_no = line_no_start
-# poke_address = poke_start
-
-# for line in range(len(data) / 8):
-#     print('%d poke #%03x,' % line_no, poke_address),
-#     for i in range(8):
-#         print('%02x' % ord(data[i])),
-
 
 if __name__ == '__main__':
     main()
