@@ -6,6 +6,7 @@ PYTHON=python
 BIN2POKE=bin2poke.py
 CFLAGS=-c -mthumb -mlittle-endian -mno-unaligned-access -Os
 BIN2POKE_OPT=-a 0x700 -s 100 -d 10
+BIN2POKE_OPT+=-o dec
 
 %.o: %.c
 	$(CC) $(CFLAGS) -o $@ -c $<
