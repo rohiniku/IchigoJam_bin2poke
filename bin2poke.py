@@ -5,11 +5,12 @@ def main():
     # default value
     line_no = 100
     line_step = 10
+    byte_count = 8
     poke_address = 0x700
     output_format = 16
     
     try:
-        opts, args = getopt.getopt(sys.argv[1:], 'a:s:d:o:')
+        opts, args = getopt.getopt(sys.argv[1:], 'a:s:d:o:c:')
     except getopt.GetoptError, err:
         print(str(err))
         sys.exit(2)
@@ -30,6 +31,8 @@ def main():
             else:
                 print('error: unsupported format')
                 sys.exit(1)
+        elif o == '-c':
+            byte_count = int(a)
         else:
             print('error: unhandled option')
             sys.exit(1)
@@ -58,14 +61,14 @@ def main():
             break
         else:
             if pos_in_line == 0:
-                out_file.write('%d poke #%03x' % (line_no, poke_address)),
-                poke_address += 8
+                out_file.write('%d poke#%03x' % (line_no, poke_address)),
+                poke_address += byte_count
             if output_format == 10:
                 out_file.write(',%d' % ord(byte)),
             else:
                 out_file.write(',#%02x' % ord(byte)),
             pos_in_line += 1
-            if pos_in_line >= 8:
+            if pos_in_line >= byte_count:
                 pos_in_line = 0
                 line_no += line_step
                 out_file.write('\n')
