@@ -28,6 +28,8 @@ def main():
                 output_format = 16
             elif a == 'dec':
                 output_format = 10
+            elif a == 'bin':
+                output_format = 2
             else:
                 print('error: unsupported format')
                 sys.exit(1)
@@ -65,6 +67,8 @@ def main():
                 poke_address += byte_count
             if output_format == 10:
                 out_file.write(',%d' % ord(byte)),
+            elif output_format == 2:
+                out_file.write(',`' + format(ord(byte),'08b')),
             else:
                 out_file.write(',#%02x' % ord(byte)),
             pos_in_line += 1

@@ -8,6 +8,7 @@ CFLAGS=-c -mthumb -mlittle-endian -mno-unaligned-access -Os
 BIN2POKE_OPT=-a 0x700 -s 100 -d 10
 #BIN2POKE_OPT+=-o dec
 #BIN2POKE_OPT+=-c 16
+#BIN2POKE_OPT+=-o bin -c 2
 
 %.o: %.c
 	$(CC) $(CFLAGS) -o $@ -c $<
