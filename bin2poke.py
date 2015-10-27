@@ -32,44 +32,91 @@ def write_u2(file, format, data):
     else:
         file.write(',#{0:0>4x}'.format(data)),
     
-def get_d_u8(inst):
-    d = (inst >> 8) & 0x0007
+def get_u3_u8(inst):
+    u3 = (inst >> 8) & 0x0007
     u8 = inst & 0x00ff
-    return d, u8
+    return u3, u8
 
-def get_n_u8(inst):
-    return get_d_u8(inst)
+def get_u3_u3(inst):
+    u3_h = (inst >> 3) & 0x0007
+    u3_l = inst & 0x0007
+    return u3_h, u3_l
 
-def get_m_d(inst):
-    m = s = (inst >> 3) & 0x0007
-    d = inst & 0x0007
-    return m, d
-
-def get_s_d(inst):
-    return get_m_d(inst)
-
-def get_u5_n_d(inst):
+def get_u5_u3_u3(inst):
     u5 = (inst >> 6) & 0x001f
-    n = (inst >> 3) & 0x0007
-    d = inst & 0x0007
-    return u5, n, d
+    u3_h = (inst >> 3) & 0x0007
+    u3_l = inst & 0x0007
+    return u5, u3_h, u3_l
 
-def get_u5_m_d(inst):
-    return get_u5_n_d(inst)
-
-def get_u3_n_d(inst):
-    u5, n, d = get_u5_n_d(inst)
+def get_u3_u3_u3(inst):
+    u5, n, d = get_u5_u3_u3(inst)
     u3 = u5 & 0x0007
     return u3, n, d
 
-def get_m_n_d(inst):
-    return get_u3_n_d(inst)
+def get_s8(inst):
+    u8 = inst & 0x00ff
+    if u8 & 0x80:
+        return -((u8 - 1) ^ 0xff)
+    else:
+        return u8
 
-def get_n8(inst):
-    return inst & 0x00ff
+def get_s11(inst):
+    u11 = inst & 0x07ff
+    if u11 & 0x400:
+        return -((u11 - 1) ^ 0x7ff)
+    else:
+        return u11
 
-def get_n11(inst):
-    return inst & 0x07ff
+inst_str15_11_s11 = {
+    0b1110000000000000: lambda n11: 'GOTO {0:}'.format(n11 + 2)
+}
+
+inst_str15_11_u3_u8 = {
+    0b0010000000000000: lambda d,u8: 'R{0:}={1:}'.format(d, u8),
+    0b0011000000000000: lambda d,u8: 'R{0:}=R{0:}+{1:}'.format(d, u8),
+    0b0011100000000000: lambda d,u8: 'R{0:}=R{0:}-{1:}'.format(d, u8),
+    0b0010100000000000: lambda n,u8: 'R{0:}-{1:}'.format(n, u8)
+}
+
+inst_str15_11_u5_u3_u3 = {
+    0b0111100000000000: lambda u5,n,d: 'R{0:}=[R{1:}+{2:}]'.format(d, n, u5),
+    0b0111000000000000: lambda u5,n,d: '[R{0:}+{1:}]=R{2:}'.format(n, u5, d),
+    0b0000000000000000: lambda u5,m,d: 'R{0:}=R{1:}<<{2:}'.format(d, m, u5),
+    0b0000100000000000: lambda u5,m,d: 'R{0:}=R{1:}>>{2:}'.format(d, m, u5)
+}
+    
+inst_str15_9_u3_u3_u3 = {
+    0b0101110000000000: lambda m,n,d: 'R{0:}=[R{1:}+R{2:}]'.format(d, n, m),
+    0b0101010000000000: lambda m,n,d: '[R{0:}+R{1:}]=R{2:}'.format(n, m, d),
+    0b0001100000000000: lambda m,n,d: 'R{0:}=R{1:}+R{2:}'.format(d, n, m),
+    0b0001101000000000: lambda m,n,d: 'R{0:}=R{1:}-R{2:}'.format(d, n, m),
+    0b0001110000000000: lambda u3,n,d: 'R{0:}=R{1:}+{2:}'.format(d, n, u3),
+    0b0001111000000000: lambda u3,n,d: 'R{0:}=R{1:}-{2:}'.format(d, n, u3)
+}
+
+inst_str15_8_s8 = {
+    0b1101000000000000: lambda n8: 'IF 0 GOTO {0:}'.format(n8 + 2),
+    0b1101000100000000: lambda n8: 'IF !0 GOTO {0:}'.format(n8 + 2)
+}
+
+inst_str15_6_u3_u3 = {
+    0b0100011000000000: lambda m,d: 'R{0:}=R{1:}'.format(d, m),
+    0b0100000000000000: lambda m,d: 'R{0:}=R{0:}&R{1:}'.format(d, m),
+    0b0100000001000000: lambda m,d: 'R{0:}=R{0:}^R{1:}'.format(d, m),
+    0b0100000010000000: lambda s,d: 'R{0:}=R{0:}<<R{1:}'.format(d, s),
+    0b0100000011000000: lambda s,d: 'R{0:}=R{0:}>>R{1:}'.format(d, s),
+    0b0100001001000000: lambda m,d: 'R{0:}=-R{1:}'.format(d, m),
+    0b0100001100000000: lambda m,d: 'R{0:}=R{0:}|R{1:}'.format(d, m),
+    0b0100001101000000: lambda m,d: 'R{0:}=R{0:}*R{1:}'.format(d, m),
+    0b0100001110000000: lambda m,d: 'R{0:}=R{0:}&~R{1:}'.format(d, m),
+    0b0100001111000000: lambda m,d: 'R{0:}=~R{1:}'.format(d, m),
+    0b0100001010000000: lambda m,n: 'R{0:}-R{1:}'.format(n, m),
+    0b0100001000000000: lambda m,n: 'R{0:}&R{1:}'.format(n, m)
+}
+
+inst_str15_0 = {
+    0b0100011101110000: 'RET'
+}
 
 def disasm(inst):
     inst_str = 'unknown'
@@ -77,96 +124,28 @@ def disasm(inst):
     inst15_9  = inst & 0xfe00
     inst15_8  = inst & 0xff00
     inst15_6  = inst & 0xffc0
-    # print('inst15_11 {0:016b}'.format(inst15_11))
-    # print('inst15_9  {0:016b}'.format(inst15_9))
-    # print('inst15_8  {0:016b}'.format(inst15_8))
-    # print('inst15_6  {0:016b}'.format(inst15_6))
-    if inst15_11 == 0b0010000000000000:
-        d, u8 = get_d_u8(inst)
-        inst_str = 'R{0:}={1:}'.format(d, u8)
-        print("{0:016b} {1:}".format(inst, inst_str))
-    elif inst15_11 == 0b0100000000000000:
-        m, d = get_m_d(inst)
-        s = m
-        inst10_6 = inst & 0x07c0
-        if inst10_6 == 0b0000011000000000:
-            inst_str = 'R{0:}=R{1:}'.format(d, m)
-        elif inst10_6 == 0b0000000000000000:
-            inst_str = 'R{0:}=R{0:}&R{1:}'.format(d, m)
-        elif inst10_6 == 0b0000000001000000:
-            inst_str = 'R{0:}=R{0:}^R{1:}'.format(d, m)
-        elif inst10_6 == 0b0000000010000000:
-            inst_str = 'R{0:}=R{0:}<<R{1:}'.format(d, s)
-        elif inst10_6 == 0b0000000011000000:
-            inst_str = 'R{0:}=R{0:}>>R{1:}'.format(d, s)
-        elif inst10_6 == 0b0000001001000000:
-            inst_str = 'R{0:}=-R{1:}'.format(d, m)
-        elif inst10_6 == 0b0000001100000000:
-            inst_str = 'R{0:}=R{0:}|R{1:}'.format(d, m)
-        elif inst10_6 == 0b0000001101000000:
-            inst_str = 'R{0:}=R{0:}*R{1:}'.format(d, m)
-        elif inst10_6 == 0b0000001110000000:
-            inst_str = 'R{0:}=R{0:}&~R{1:}'.format(d, m)
-        elif inst10_6 == 0b0000001111000000:
-            inst_str = 'R{0:}=~R{1:}'.format(d, m)
-        elif inst == 0b0100011101110000:
-            inst_str = 'RET'
-    elif inst15_11 == 0b0111100000000000:
-        u5, n, d = get_u5_n_d(inst)
-        inst_str = 'R{0:}=[R{1:}+{2:}]'.format(d, n, u5)
-    elif inst15_11 == 0b0111000000000000:
-        u5, n, d = get_u5_n_d(inst)
-        inst_str = '[R{0:}+{1:}]=R{2:}'.format(n, u5, d)
-    elif inst15_9 == 0b0101110000000000:
-        m, n, d = get_m_n_d(inst)
-        inst_str = 'R{0:}=[R{1:}+R{2:}]'.format(d, n, m)
-    elif inst15_9 == 0b0101010000000000:
-        m, n, d = get_m_n_d(inst)
-        inst_str = '[R{0:}+R{1:}]=R{2:}'.format(n, m, d)
-    elif inst15_11 == 0b0011000000000000:
-        d, u8 = get_d_u8(inst)
-        inst_str = 'R{0:}=R{0:}+{1:}'.format(d, u8)
-    elif inst15_11 == 0b0011100000000000:
-        d, u8 = get_d_u8(inst)
-        inst_str = 'R{0:}=R{0:}-{1:}'.format(d, u8)
-    elif inst15_11 == 0b0000000000000000:
-        u5, m, d = get_u5_m_d(inst)
-        inst_str = 'R{0:}=R{1:}<<{2:}'.format(d, m, u5)
-    elif inst15_11 == 0b0000100000000000:
-        u5, m, d = get_u5_m_d(inst)
-        inst_str = 'R{0:}=R{1:}>>{2:}'.format(d, m, u5)
-    elif inst15_9 == 0b0001110000000000:
-        u3, n, d = get_u3_n_d(inst)
-        inst_str = 'R{0:}=R{1:}+{2:}'.format(d, n, u3)
-    elif inst15_9 == 0b0001111000000000:
-        u3, n, d = get_u3_n_d(inst)
-        inst_str = 'R{0:}=R{1:}-{2:}'.format(d, n, u3)
-    elif inst15_9 == 0b0001100000000000:
-        m, n, d = get_m_n_d(inst)
-        inst_str = 'R{0:}=R{1:}+R{2:}'.format(d, n, m)
-    elif inst15_9 == 0b0001101000000000:
-        m, n, d = get_m_n_d(inst)
-        inst_str = 'R{0:}=R{1:}-R{2:}'.format(d, n, m)
-    elif inst15_11 == 0b0010100000000000:
-        n, u8 = get_n_u8(inst)
-        inst_str = 'R{0:}-{1:}'.format(n, u8)
-    elif inst15_6 == 0b0100001010000000:
-        m, n = get_m_n(inst)
-        inst_str = 'R{0:}-R{1:}'.format(n, m)
-    elif inst15_6 == 0b0100001000000000:
-        m, n = get_m_n(inst)
-        inst_str = 'R{0:}&R{1:}'.format(n, m)
-    elif inst15_8 == 0b1101000000000000:
-        n8 = get_n8(inst)
-        inst_str = 'IF 0 JUMP {0:}<<1'.format(n8)
-    elif inst15_8 == 0b1101000100000000:
-        n8 = get_n8(inst)
-        inst_str = 'IF !0 JUMP {0:}<<1'.format(n8)
-    elif inst15_11 == 0b1110000000000000:
-        n11 = get_n11(inst)
-        inst_str = 'JUMP {0:}<<1'.format(n11)
+
+    if inst in inst_str15_0:
+        inst_str = inst_str15_0[inst]
+    elif inst15_11 in inst_str15_11_s11:
+        n11 = get_s11(inst)
+        inst_str = inst_str15_11_s11[inst15_11](n11)
+    elif inst15_11 in inst_str15_11_u3_u8:
+        d, u8 = get_u3_u8(inst)
+        inst_str = inst_str15_11_u3_u8[inst15_11](d, u8)
+    elif inst15_11 in inst_str15_11_u5_u3_u3:
+        u5, n, d = get_u5_u3_u3(inst)
+        inst_str = inst_str15_11_u5_u3_u3[inst15_11](u5, n, d)
+    elif inst15_9 in inst_str15_9_u3_u3_u3:
+        m, n, d = get_u3_u3_u3(inst)
+        inst_str = inst_str15_9_u3_u3_u3[inst15_9](m, n, d)
+    elif inst15_8 in inst_str15_8_s8:
+        n8 = get_s8(inst)
+        inst_str = inst_str15_8_s8[inst15_8](n8)
+    elif inst15_6 in inst_str15_6_u3_u3:
+        m, d = get_u3_u3(inst)
+        inst_str = inst_str15_6_u3_u3[inst15_6](m, d)
     
-    print("->{0:016b} {1:}".format(inst, inst_str))
     return inst_str
 
 def main():
