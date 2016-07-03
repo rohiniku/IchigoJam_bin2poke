@@ -31,7 +31,7 @@ BIN2POKE_OPT+=-a 0
 	$(CC) $(CFLAGS) -o $@ -c $<
 
 %.elf: %.o
-	$(LD) -T bin2poke.ld -o $@ $<
+	$(LD) -T bin2poke.ld -o $@ $< -Map linkmap.map
 
 %.bin: %.elf
 	$(OBJCOPY) -O binary $< $@

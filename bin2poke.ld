@@ -1,6 +1,8 @@
+OUTPUT_ARCH(arm)
 SECTIONS
 {
   PROVIDE(__executable_start = 0x0000000);
+  .entry          : { *(.entry .entry.*) }
   .text           : { *(.text .text.*) }
   .rodata         : { *(.rodata .rodata.*) }
   .tdata	  : { *(.tdata .tdata.*) }
