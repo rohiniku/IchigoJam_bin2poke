@@ -27,6 +27,11 @@ BIN2POKE_OPT+=-a 0
 # 以下の組み合わせでの出力を指定した場合に限り、コメント部に逆アセンブルコードを出力
 #BIN2POKE_OPT+=-a 0 -o bin -c 1
 
+all:
+	@echo "IchigoJam_bin2poke"
+	@echo "Usage: make <targetfile>.bas"
+	@echo "e.g. $$ make usr_sample.bas"
+
 %.o: %.c
 	$(CC) $(CFLAGS) -o $@ -c $<
 
@@ -42,5 +47,10 @@ BIN2POKE_OPT+=-a 0
 %.s: %.elf
 	$(OBJDUMP) -d -S -l $< > $@
 
+%.asm: %.o
+	$(OBJDUMP) -d -S -l $< > $@
+
 clean:
-	$(RM) *.o *.bin
+	@$(RM) -rf *.elf *.o *.bin *.bas
+
+#.PRECIOUS: %.elf %.o %.bin
